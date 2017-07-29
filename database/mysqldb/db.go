@@ -10,11 +10,6 @@ func ConnectDb(host, user, pw, dbName string) bool {
 	return res
 }
 
-//GetDb check db
-// func GetDb() *sql.DB {
-// 	return crud.GetDb()
-// }
-
 //InsertContent insert
 func InsertContent(args ...interface{}) (bool, int64) {
 	success, insID := crud.Insert(nil, InsertContentQuery, args...)
