@@ -10,6 +10,12 @@ func ConnectDb(host, user, pw, dbName string) bool {
 	return res
 }
 
+//ConnectionTest get a row. Passing in tx allows for transactions
+func ConnectionTest(args ...interface{}) *crud.DbRow {
+	rowPtr := crud.Get(ConnectionTestQuery, args...)
+	return rowPtr
+}
+
 //InsertContent insert
 func InsertContent(args ...interface{}) (bool, int64) {
 	success, insID := crud.Insert(nil, InsertContentQuery, args...)

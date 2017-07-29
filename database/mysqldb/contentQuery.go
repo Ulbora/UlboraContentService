@@ -7,4 +7,5 @@ const (
 	ContentGetQuery         = "select * from content WHERE id = ? and client_id = ?"
 	ContentGetByClientQuery = "select * from content WHERE client_id = ? order by id"
 	DeleteContentQuery      = "DELETE FROM content WHERE id = ? and client_id = ?"
+	ConnectionTestQuery     = "SELECT count(*) from content"
 )

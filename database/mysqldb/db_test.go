@@ -19,14 +19,31 @@ func TestConnectDb(t *testing.T) {
 	}
 }
 
-// func TestGetDb(t *testing.T) {
-// 	testDb := GetDb()
-// 	if testDb == nil {
-// 		fmt.Println("get db failed")
-// 		t.Fail()
-// 	}
-// }
-
+func TestConnectionTest(t *testing.T) {
+	var a []interface{}
+	rowPtr := ConnectionTest(a...)
+	if rowPtr != nil {
+		foundRow := rowPtr.Row
+		//fmt.Print("Records found during test ")
+		//fmt.Println(foundRow)
+		//fmt.Println("Get results: --------------------------")
+		int64Val, err2 := strconv.ParseInt(foundRow[0], 10, 0)
+		fmt.Print("Records found during test ")
+		fmt.Println(int64Val)
+		if err2 != nil {
+			fmt.Print(err2)
+		}
+		if int64Val >= 0 {
+			fmt.Println("database connection ok")
+		} else {
+			fmt.Println("database connection failed")
+			t.Fail()
+		}
+	} else {
+		fmt.Println("database read failed")
+		t.Fail()
+	}
+}
 func TestInsertContent(t *testing.T) {
 	var a []interface{}
 	a = append(a, "test insert 2", time.Now(), "some content text", 125)
