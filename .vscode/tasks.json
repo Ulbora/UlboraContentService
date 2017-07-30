@@ -12,7 +12,8 @@
       "suppressTaskName": true,
       "isBuildCommand": true,
       "args": [
-        "go install UlboraContentService/database/mysqldb"
+        "go install UlboraContentService/database/mysqldb",
+        "go install UlboraContentService/database"
       ]
     }
   ]
