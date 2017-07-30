@@ -48,10 +48,10 @@ func TestInsertContent(t *testing.T) {
 	content.Title = "test insert in manager"
 	content.CreateDate = time.Now()
 	content.Hits = 0
-	content.MediaAuthorName = "ken"
-	content.MediaDesc = "test content"
-	content.MediaKeyWords = "test, content, Ulbora"
-	content.MediaRobotKeyWorks = "test, content, Ulbora"
+	content.MetaAuthorName = "ken"
+	content.MetaDesc = "test content"
+	content.MetaKeyWords = "test, content, Ulbora"
+	content.MetaRobotKeyWords = "test, content, Ulbora"
 	content.Text = "some content text sent from wire"
 	content.ClientID = 127
 
@@ -81,10 +81,10 @@ func TestUpdateContent(t *testing.T) {
 	content.Title = "test updated in manager"
 	content.ModifiedDate = time.Now()
 	content.Hits = 5
-	content.MediaAuthorName = "ken"
-	content.MediaDesc = "test content"
-	content.MediaKeyWords = "test, content, Ulbora"
-	content.MediaRobotKeyWorks = "test, content, Ulbora"
+	content.MetaAuthorName = "ken"
+	content.MetaDesc = "test content"
+	content.MetaKeyWords = "test, content, Ulbora"
+	content.MetaRobotKeyWords = "test, content, Ulbora"
 	content.Text = "some content text sent from wire"
 	content.ID = insertID
 	content.ClientID = 127

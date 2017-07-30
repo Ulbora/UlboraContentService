@@ -34,23 +34,23 @@ const (
 
 //Response res
 type Response struct {
-	Success bool
-	ID      int64
+	Success bool  `json:"success"`
+	ID      int64 `json:"id"`
 }
 
 //Content content
 type Content struct {
-	ID                 int64
-	Title              string
-	CreateDate         time.Time
-	ModifiedDate       time.Time
-	Hits               int64
-	MediaAuthorName    string
-	MediaDesc          string
-	MediaKeyWords      string
-	MediaRobotKeyWorks string
-	Text               string
-	ClientID           int64
+	ID                int64     `json:"id"`
+	Title             string    `json:"title"`
+	CreateDate        time.Time `json:"createDate"`
+	ModifiedDate      time.Time `json:"modifiedDate"`
+	Hits              int64     `json:"hits"`
+	MetaAuthorName    string    `json:"metaAuthorName"`
+	MetaDesc          string    `json:"metaDesc"`
+	MetaKeyWords      string    `json:"metaKeyWords"`
+	MetaRobotKeyWords string    `json:"metaRobotKeyWords"`
+	Text              string    `json:"text"`
+	ClientID          int64     `json:"clientId"`
 }
 
 //ContentDB db config
@@ -76,7 +76,7 @@ func (db *ContentDB) InsertContent(content *Content) *Response {
 		db.DbConfig.ConnectDb()
 	}
 	var a []interface{}
-	a = append(a, content.Title, content.CreateDate, content.Hits, content.MediaAuthorName, content.MediaDesc, content.MediaKeyWords, content.MediaRobotKeyWorks, content.Text, content.ClientID)
+	a = append(a, content.Title, content.CreateDate, content.Hits, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ClientID)
 	success, insID := db.DbConfig.InsertContent(a...)
 	if success == true {
 		fmt.Println("inserted record")
@@ -95,7 +95,7 @@ func (db *ContentDB) UpdateContent(content *Content) *Response {
 		db.DbConfig.ConnectDb()
 	}
 	var a []interface{}
-	a = append(a, content.Title, content.ModifiedDate, content.Hits, content.MediaAuthorName, content.MediaDesc, content.MediaKeyWords, content.MediaRobotKeyWorks, content.Text, content.ID, content.ClientID)
+	a = append(a, content.Title, content.ModifiedDate, content.Hits, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ID, content.ClientID)
 	success := db.DbConfig.UpdateContent(a...)
 	if success == true {
 		fmt.Println("update record")
@@ -209,10 +209,10 @@ func parseContentRow(foundRow *[]string) *Content {
 	} else {
 		rtn.Hits = hits
 	}
-	rtn.MediaAuthorName = (*foundRow)[5]
-	rtn.MediaDesc = (*foundRow)[6]
-	rtn.MediaKeyWords = (*foundRow)[7]
-	rtn.MediaRobotKeyWorks = (*foundRow)[8]
+	rtn.MetaAuthorName = (*foundRow)[5]
+	rtn.MetaDesc = (*foundRow)[6]
+	rtn.MetaKeyWords = (*foundRow)[7]
+	rtn.MetaRobotKeyWords = (*foundRow)[8]
 	rtn.Text = (*foundRow)[9]
 	clientID, errClient := strconv.ParseInt((*foundRow)[10], 10, 0)
 	if errClient != nil {

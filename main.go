@@ -22,24 +22,88 @@
 package main
 
 import (
+	contentManager "UlboraContentService/manager"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
+var contentDB contentManager.ContentDB
+
 func main() {
-	fmt.Println("Hello Wolrd")
-	fmt.Println("It works!!!")
+	if os.Getenv("MYSQL_PORT_3306_TCP_ADDR") != "" {
+		contentDB.DbConfig.Host = os.Getenv("MYSQL_PORT_3306_TCP_ADDR")
+	} else if os.Getenv("DATABASE_HOST") != "" {
+		contentDB.DbConfig.Host = os.Getenv("DATABASE_HOST")
+	} else {
+		contentDB.DbConfig.Host = "localhost:3306"
+	}
+
+	if os.Getenv("DATABASE_USER_NAME") != "" {
+		contentDB.DbConfig.DbUser = os.Getenv("DATABASE_USER_NAME")
+	} else {
+		contentDB.DbConfig.DbUser = "admin"
+	}
+
+	if os.Getenv("DATABASE_USER_PASSWORD") != "" {
+		contentDB.DbConfig.DbPw = os.Getenv("DATABASE_USER_PASSWORD")
+	} else {
+		contentDB.DbConfig.DbPw = "admin"
+	}
+
+	if os.Getenv("DATABASE_NAME") != "" {
+		contentDB.DbConfig.DatabaseName = os.Getenv("DATABASE_NAME")
+	} else {
+		contentDB.DbConfig.DatabaseName = "ulbora_content_service"
+	}
+	contentDB.ConnectDb()
+	defer contentDB.CloseDb()
+
+	fmt.Println("Server running!")
 	router := mux.NewRouter()
-	router.HandleFunc("/rs/content", handleContent).Methods("POST", "PUT")
+	router.HandleFunc("/rs/content", handleContentChange).Methods("POST", "PUT")
 	router.HandleFunc("/rs/content/{id}/{clientId}", handleContentGet).Methods("GET", "DELETE")
 	router.HandleFunc("/rs/contentList/{clientId}", handleContentList).Methods("GET")
 	http.ListenAndServe(":3008", router)
 }
 
-func handleContent(res http.ResponseWriter, req *http.Request) {
-
+func handleContentChange(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "application/json")
+	switch req.Method {
+	case "POST":
+		cType := req.Header.Get("Content-Type")
+		if cType != "application/json" {
+			http.Error(res, "json required", http.StatusUnsupportedMediaType)
+		} else {
+			content := new(contentManager.Content)
+			decoder := json.NewDecoder(req.Body)
+			error := decoder.Decode(&content)
+			if error != nil {
+				log.Println(error.Error())
+				http.Error(res, error.Error(), http.StatusBadRequest)
+			} else if content.Title == "" || content.Text == "" || content.ClientID == 0 {
+				http.Error(res, "bad request", http.StatusBadRequest)
+			} else {
+				content.CreateDate = time.Now()
+				fmt.Println(content)
+				resOut := contentDB.InsertContent(content)
+				fmt.Print("response: ")
+				fmt.Println(resOut)
+				resJSON, err := json.Marshal(resOut)
+				if err != nil {
+					log.Println(error.Error())
+					http.Error(res, "json output failed", http.StatusInternalServerError)
+				}
+				res.WriteHeader(http.StatusOK)
+				fmt.Fprint(res, string(resJSON))
+			}
+		}
+	}
 }
 
 func handleContentGet(res http.ResponseWriter, req *http.Request) {
