@@ -38,7 +38,7 @@ func TestConnectionTest(t *testing.T) {
 
 func TestInsertContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert 2", time.Now(), "some content text", 126)
+	a = append(a, "test insert 2", time.Now(), 0, "", "", "", "", "some content text", 126)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success, insID := dbConfig.InsertContent(a...)
 	if success == true && insID != -1 {
@@ -63,9 +63,20 @@ func TestInsertContent(t *testing.T) {
 
 func TestUpdateContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert update", time.Now(), "some content new text updated", insertID, 126)
+	a = append(a, "test insert update", time.Now(), 1, "", "", "", "", "some content new text updated", insertID, 126)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success := dbConfig.UpdateContent(a...)
+	if success != true {
+		fmt.Println("database update failed")
+		t.Fail()
+	}
+}
+
+func TestUpdateContentHits(t *testing.T) {
+	var a []interface{}
+	a = append(a, time.Now(), 10, insertID2, 126)
+	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
+	success := dbConfig.UpdateContentHits(a...)
 	if success != true {
 		fmt.Println("database update failed")
 		t.Fail()

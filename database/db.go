@@ -92,6 +92,15 @@ func (db *DbConfig) UpdateContent(args ...interface{}) bool {
 	return success
 }
 
+//UpdateContentHits in database
+func (db *DbConfig) UpdateContentHits(args ...interface{}) bool {
+	success := contentDb.UpdateContentHits(args...)
+	if success == true {
+		fmt.Println("updated record")
+	}
+	return success
+}
+
 //GetContent get a row. Passing in tx allows for transactions
 func (db *DbConfig) GetContent(args ...interface{}) *ContentRow {
 	var contentRow ContentRow

@@ -24,6 +24,7 @@ package manager
 import (
 	db "UlboraContentService/database"
 	"fmt"
+	"time"
 )
 
 //Response res
@@ -36,8 +37,8 @@ type Response struct {
 type Content struct {
 	ID                 int64
 	Title              string
-	CreateDate         string
-	ModifiedDate       string
+	CreateDate         time.Time
+	ModifiedDate       time.Time
 	Hits               int64
 	MediaAuthorName    string
 	MediaDesc          string
@@ -47,18 +48,73 @@ type Content struct {
 	ClientID           int64
 }
 
-//DbConfig db config
-type Db struct {
-	Db string
+//ContentDB db config
+type ContentDB struct {
+	DbConfig db.DbConfig
 }
 
-var dbConfig db.DbConfig
-
 //ConnectDb to database
-func (db *Db) ConnectDb() bool {
-	rtn := dbConfig.ConnectDb()
+func (db *ContentDB) ConnectDb() bool {
+	rtn := db.DbConfig.ConnectDb()
 	if rtn == true {
 		fmt.Println("db connect")
+	}
+	return rtn
+}
+
+//InsertContent in database
+func (db *ContentDB) InsertContent(content Content) (bool, int64) {
+	dbConnected := db.DbConfig.ConnectionTest()
+	if !dbConnected {
+		fmt.Println("reconnection to closed database")
+		db.DbConfig.ConnectDb()
+	}
+	var a []interface{}
+	a = append(a, content.Title, content.CreateDate, content.Hits, content.MediaAuthorName, content.MediaDesc, content.MediaKeyWords, content.MediaRobotKeyWorks, content.Text, content.ClientID)
+	success, insID := db.DbConfig.InsertContent(a...)
+	if success == true {
+		fmt.Println("inserted record")
+	}
+	return success, insID
+}
+
+//UpdateContent in database
+func (db *ContentDB) UpdateContent(content Content) bool {
+	dbConnected := db.DbConfig.ConnectionTest()
+	if !dbConnected {
+		fmt.Println("reconnection to closed database")
+		db.DbConfig.ConnectDb()
+	}
+	var a []interface{}
+	a = append(a, content.Title, content.ModifiedDate, content.Hits, content.MediaAuthorName, content.MediaDesc, content.MediaKeyWords, content.MediaRobotKeyWorks, content.Text, content.ID, content.ClientID)
+	success := db.DbConfig.UpdateContent(a...)
+	if success == true {
+		fmt.Println("update record")
+	}
+	return success
+}
+
+//UpdateContentHits in database
+func (db *ContentDB) UpdateContentHits(content Content) bool {
+	dbConnected := db.DbConfig.ConnectionTest()
+	if !dbConnected {
+		fmt.Println("reconnection to closed database")
+		db.DbConfig.ConnectDb()
+	}
+	var a []interface{}
+	a = append(a, content.ModifiedDate, content.Hits, content.ID, content.ClientID)
+	success := db.DbConfig.UpdateContentHits(a...)
+	if success == true {
+		fmt.Println("update hits on record")
+	}
+	return success
+}
+
+//CloseDb connection to database
+func (db *ContentDB) CloseDb() bool {
+	rtn := db.DbConfig.CloseDb()
+	if rtn == true {
+		fmt.Println("db connect closed")
 	}
 	return rtn
 }

@@ -48,6 +48,12 @@ func UpdateContent(args ...interface{}) bool {
 	return success
 }
 
+//UpdateContentHits updates a row hits. Passing in tx allows for transactions
+func UpdateContentHits(args ...interface{}) bool {
+	success := crud.Update(nil, UpdateContentHitsQuery, args...)
+	return success
+}
+
 //GetContent get a row. Passing in tx allows for transactions
 func GetContent(args ...interface{}) *crud.DbRow {
 	rowPtr := crud.Get(ContentGetQuery, args...)
