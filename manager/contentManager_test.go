@@ -55,21 +55,21 @@ func TestInsertContent(t *testing.T) {
 	content.Text = "some content text sent from wire"
 	content.ClientID = 127
 
-	success, insID := contentDB.InsertContent(content)
-	if success == true && insID != -1 {
-		insertID = insID
+	res := contentDB.InsertContent(&content)
+	if res.Success == true && res.ID != -1 {
+		insertID = res.ID
 		fmt.Print("new Id: ")
-		fmt.Println(insID)
+		fmt.Println(res.ID)
 	} else {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
 
-	success2, insID2 := contentDB.InsertContent(content)
-	if success2 == true && insID2 != -1 {
-		insertID2 = insID2
+	res2 := contentDB.InsertContent(&content)
+	if res2.Success == true && res2.ID != -1 {
+		insertID2 = res2.ID
 		fmt.Print("new Id: ")
-		fmt.Println(insID2)
+		fmt.Println(res2.ID)
 	} else {
 		fmt.Println("database insert failed")
 		t.Fail()
@@ -88,8 +88,8 @@ func TestUpdateContent(t *testing.T) {
 	content.Text = "some content text sent from wire"
 	content.ID = insertID
 	content.ClientID = 127
-	success := contentDB.UpdateContent(content)
-	if success != true {
+	res := contentDB.UpdateContent(&content)
+	if res.Success != true {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
@@ -101,12 +101,67 @@ func TestUpdateContentHits(t *testing.T) {
 	content.Hits = 50
 	content.ID = insertID2
 	content.ClientID = 127
-	success := contentDB.UpdateContentHits(content)
-	if success != true {
+	res := contentDB.UpdateContentHits(&content)
+	if res.Success != true {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
 }
+
+func TestGetContent(t *testing.T) {
+	var content Content
+	content.ID = insertID
+	content.ClientID = 127
+	res := contentDB.GetContent(&content)
+	fmt.Println("")
+	fmt.Print("found content: ")
+	fmt.Println(res)
+	if res.Hits != 5 {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
+}
+
+func TestGetContentByClient(t *testing.T) {
+	var content Content
+	content.ClientID = 127
+	res := contentDB.GetContentByClient(&content)
+	fmt.Println("")
+	fmt.Print("found list content: ")
+	fmt.Println(res)
+	if len(*res) == 0 {
+		fmt.Println("database read failed")
+		t.Fail()
+	} else {
+		row1 := (*res)[0]
+		if row1.Hits != 5 {
+			t.Fail()
+		}
+		row2 := (*res)[1]
+		if row2.Hits != 50 {
+			t.Fail()
+		}
+	}
+}
+
+func TestDeleteContent(t *testing.T) {
+	var content Content
+	content.ID = insertID
+	content.ClientID = 127
+	res := contentDB.DeleteContent(&content)
+	if res.Success != true {
+		fmt.Println("database delete failed")
+		t.Fail()
+	}
+
+	content.ID = insertID2
+	res2 := contentDB.DeleteContent(&content)
+	if res2.Success != true {
+		fmt.Println("database delete failed")
+		t.Fail()
+	}
+}
+
 func TestCloseDb(t *testing.T) {
 	success := contentDB.CloseDb()
 	if success != true {

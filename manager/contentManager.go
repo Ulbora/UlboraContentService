@@ -24,12 +24,17 @@ package manager
 import (
 	db "UlboraContentService/database"
 	"fmt"
+	"strconv"
 	"time"
+)
+
+const (
+	timeFormat = "2006-01-02 15:04:05"
 )
 
 //Response res
 type Response struct {
-	Success string
+	Success bool
 	ID      int64
 }
 
@@ -63,7 +68,8 @@ func (db *ContentDB) ConnectDb() bool {
 }
 
 //InsertContent in database
-func (db *ContentDB) InsertContent(content Content) (bool, int64) {
+func (db *ContentDB) InsertContent(content *Content) *Response {
+	var rtn Response
 	dbConnected := db.DbConfig.ConnectionTest()
 	if !dbConnected {
 		fmt.Println("reconnection to closed database")
@@ -75,11 +81,14 @@ func (db *ContentDB) InsertContent(content Content) (bool, int64) {
 	if success == true {
 		fmt.Println("inserted record")
 	}
-	return success, insID
+	rtn.ID = insID
+	rtn.Success = success
+	return &rtn
 }
 
 //UpdateContent in database
-func (db *ContentDB) UpdateContent(content Content) bool {
+func (db *ContentDB) UpdateContent(content *Content) *Response {
+	var rtn Response
 	dbConnected := db.DbConfig.ConnectionTest()
 	if !dbConnected {
 		fmt.Println("reconnection to closed database")
@@ -91,11 +100,14 @@ func (db *ContentDB) UpdateContent(content Content) bool {
 	if success == true {
 		fmt.Println("update record")
 	}
-	return success
+	rtn.ID = content.ID
+	rtn.Success = success
+	return &rtn
 }
 
 //UpdateContentHits in database
-func (db *ContentDB) UpdateContentHits(content Content) bool {
+func (db *ContentDB) UpdateContentHits(content *Content) *Response {
+	var rtn Response
 	dbConnected := db.DbConfig.ConnectionTest()
 	if !dbConnected {
 		fmt.Println("reconnection to closed database")
@@ -107,7 +119,58 @@ func (db *ContentDB) UpdateContentHits(content Content) bool {
 	if success == true {
 		fmt.Println("update hits on record")
 	}
-	return success
+	rtn.ID = content.ID
+	rtn.Success = success
+	return &rtn
+}
+
+//GetContent content from database
+func (db *ContentDB) GetContent(content *Content) *Content {
+	var a []interface{}
+	a = append(a, content.ID, content.ClientID)
+	var rtn *Content
+	rowPtr := db.DbConfig.GetContent(a...)
+	if rowPtr != nil {
+		foundRow := rowPtr.Row
+		rtn = parseContentRow(&foundRow)
+	}
+	return rtn
+}
+
+//GetContentByClient content by Client
+func (db *ContentDB) GetContentByClient(content *Content) *[]Content {
+	var rtn []Content
+	var a []interface{}
+	a = append(a, content.ClientID)
+	rowsPtr := db.DbConfig.GetContentByClient(a...)
+	if rowsPtr != nil {
+		foundRows := rowsPtr.Rows
+		for r := range foundRows {
+			foundRow := foundRows[r]
+			rowContent := parseContentRow(&foundRow)
+			rtn = append(rtn, *rowContent)
+		}
+	}
+	return &rtn
+}
+
+//DeleteContent in database
+func (db *ContentDB) DeleteContent(content *Content) *Response {
+	var rtn Response
+	dbConnected := db.DbConfig.ConnectionTest()
+	if !dbConnected {
+		fmt.Println("reconnection to closed database")
+		db.DbConfig.ConnectDb()
+	}
+	var a []interface{}
+	a = append(a, content.ID, content.ClientID)
+	success := db.DbConfig.DeleteContent(a...)
+	if success == true {
+		fmt.Println("deleted record")
+	}
+	rtn.ID = content.ID
+	rtn.Success = success
+	return &rtn
 }
 
 //CloseDb connection to database
@@ -117,4 +180,45 @@ func (db *ContentDB) CloseDb() bool {
 		fmt.Println("db connect closed")
 	}
 	return rtn
+}
+
+func parseContentRow(foundRow *[]string) *Content {
+	var rtn Content
+	id, errID := strconv.ParseInt((*foundRow)[0], 10, 0)
+	if errID != nil {
+		fmt.Print(errID)
+	} else {
+		rtn.ID = id
+	}
+	rtn.Title = (*foundRow)[1]
+	cTime, errCtime := time.Parse(timeFormat, (*foundRow)[2])
+	if errCtime != nil {
+		fmt.Print(errCtime)
+	} else {
+		rtn.CreateDate = cTime
+	}
+	mTime, errMtime := time.Parse(timeFormat, (*foundRow)[3])
+	if errMtime != nil {
+		fmt.Print(errMtime)
+	} else {
+		rtn.ModifiedDate = mTime
+	}
+	hits, errHits := strconv.ParseInt((*foundRow)[4], 10, 0)
+	if errHits != nil {
+		fmt.Print(errHits)
+	} else {
+		rtn.Hits = hits
+	}
+	rtn.MediaAuthorName = (*foundRow)[5]
+	rtn.MediaDesc = (*foundRow)[6]
+	rtn.MediaKeyWords = (*foundRow)[7]
+	rtn.MediaRobotKeyWorks = (*foundRow)[8]
+	rtn.Text = (*foundRow)[9]
+	clientID, errClient := strconv.ParseInt((*foundRow)[10], 10, 0)
+	if errClient != nil {
+		fmt.Print(errClient)
+	} else {
+		rtn.ClientID = clientID
+	}
+	return &rtn
 }
