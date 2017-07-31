@@ -28,6 +28,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -67,19 +68,19 @@ func main() {
 	fmt.Println("Server running!")
 	router := mux.NewRouter()
 	router.HandleFunc("/rs/content", handleContentChange).Methods("POST", "PUT")
-	router.HandleFunc("/rs/content/{id}/{clientId}", handleContentGet).Methods("GET", "DELETE")
+	router.HandleFunc("/rs/content/{id}/{clientId}", handleContent).Methods("GET", "DELETE")
 	router.HandleFunc("/rs/contentList/{clientId}", handleContentList).Methods("GET")
 	http.ListenAndServe(":3008", router)
 }
 
 func handleContentChange(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
-	switch req.Method {
-	case "POST":
-		cType := req.Header.Get("Content-Type")
-		if cType != "application/json" {
-			http.Error(res, "json required", http.StatusUnsupportedMediaType)
-		} else {
+	cType := req.Header.Get("Content-Type")
+	if cType != "application/json" {
+		http.Error(res, "json required", http.StatusUnsupportedMediaType)
+	} else {
+		switch req.Method {
+		case "POST":
 			content := new(contentManager.Content)
 			decoder := json.NewDecoder(req.Body)
 			error := decoder.Decode(&content)
@@ -102,26 +103,98 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 				res.WriteHeader(http.StatusOK)
 				fmt.Fprint(res, string(resJSON))
 			}
+		case "PUT":
+			content := new(contentManager.Content)
+			decoder := json.NewDecoder(req.Body)
+			error := decoder.Decode(&content)
+			if error != nil {
+				log.Println(error.Error())
+				http.Error(res, error.Error(), http.StatusBadRequest)
+			} else if content.Title == "" || content.Text == "" || content.ID == 0 || content.ClientID == 0 {
+				http.Error(res, "bad request in update", http.StatusBadRequest)
+			} else {
+				content.ModifiedDate = time.Now()
+				fmt.Println(content)
+				resOut := contentDB.UpdateContent(content)
+				fmt.Print("response: ")
+				fmt.Println(resOut)
+				resJSON, err := json.Marshal(resOut)
+				if err != nil {
+					log.Println(error.Error())
+					http.Error(res, "json output failed", http.StatusInternalServerError)
+				}
+				res.WriteHeader(http.StatusOK)
+				fmt.Fprint(res, string(resJSON))
+			}
 		}
 	}
 }
 
-func handleContentGet(res http.ResponseWriter, req *http.Request) {
+func handleContent(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(req)
-	id := vars["id"]
+	id, errID := strconv.ParseInt(vars["id"], 10, 0)
+	if errID != nil {
+		http.Error(res, "bad request", http.StatusBadRequest)
+	}
+	clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
+	if errClient != nil {
+		http.Error(res, "bad request", http.StatusBadRequest)
+	}
 	fmt.Print("id is: ")
 	fmt.Print(id)
-	var rtn = []byte("success")
-
-	res.Write(rtn)
+	switch req.Method {
+	case "GET":
+		content := new(contentManager.Content)
+		content.ID = id
+		content.ClientID = clientID
+		resOut := contentDB.GetContent(content)
+		fmt.Print("response: ")
+		fmt.Println(resOut)
+		resJSON, err := json.Marshal(resOut)
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(res, "json output failed", http.StatusInternalServerError)
+		}
+		res.WriteHeader(http.StatusOK)
+		fmt.Fprint(res, string(resJSON))
+	case "DELETE":
+		content := new(contentManager.Content)
+		content.ID = id
+		content.ClientID = clientID
+		resOut := contentDB.DeleteContent(content)
+		fmt.Print("response: ")
+		fmt.Println(resOut)
+		resJSON, err := json.Marshal(resOut)
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(res, "json output failed", http.StatusInternalServerError)
+		}
+		res.WriteHeader(http.StatusOK)
+		fmt.Fprint(res, string(resJSON))
+	}
 }
 
 func handleContentList(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(req)
-	id := vars["id"]
-	fmt.Print("id is: ")
-	fmt.Print(id)
-	var rtn = []byte("success")
-
-	res.Write(rtn)
+	clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
+	if errClient != nil {
+		http.Error(res, "bad request", http.StatusBadRequest)
+	}
+	switch req.Method {
+	case "GET":
+		content := new(contentManager.Content)
+		content.ClientID = clientID
+		resOut := contentDB.GetContentByClient(content)
+		fmt.Print("response: ")
+		fmt.Println(resOut)
+		resJSON, err := json.Marshal(resOut)
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(res, "json output failed", http.StatusInternalServerError)
+		}
+		res.WriteHeader(http.StatusOK)
+		fmt.Fprint(res, string(resJSON))
+	}
 }
