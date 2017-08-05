@@ -29,12 +29,20 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
+	uoauth "github.com/Ulbora/go-ulbora-oauth2"
 	"github.com/gorilla/mux"
 )
 
 var contentDB contentManager.ContentDB
+
+type authHeader struct {
+	token    string
+	clientID int64
+	userID   string
+}
 
 func main() {
 	if os.Getenv("MYSQL_PORT_3306_TCP_ADDR") != "" {
@@ -67,13 +75,18 @@ func main() {
 
 	fmt.Println("Server running!")
 	router := mux.NewRouter()
-	router.HandleFunc("/rs/content", handleContentChange).Methods("POST", "PUT")
-	router.HandleFunc("/rs/content/{id}/{clientId}", handleContent).Methods("GET", "DELETE")
-	router.HandleFunc("/rs/contentList/{clientId}", handleContentList).Methods("GET")
+	router.HandleFunc("/rs/content/add", handleContentChange).Methods("POST")
+	router.HandleFunc("/rs/content/update", handleContentChange).Methods("PUT")
+	router.HandleFunc("/rs/content/get/{id}/{clientId}", handleContent).Methods("GET")
+	router.HandleFunc("/rs/content/list/{clientId}", handleContentList).Methods("GET")
+	router.HandleFunc("/rs/content/delete/{id}", handleContent).Methods("DELETE")
 	http.ListenAndServe(":3008", router)
 }
 
 func handleContentChange(res http.ResponseWriter, req *http.Request) {
+	auth := getAuth(req)
+	me := new(uoauth.Claim)
+	me.Role = "admin"
 	res.Header().Set("Content-Type", "application/json")
 	cType := req.Header.Get("Content-Type")
 	if cType != "application/json" {
@@ -81,50 +94,64 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 	} else {
 		switch req.Method {
 		case "POST":
-			content := new(contentManager.Content)
-			decoder := json.NewDecoder(req.Body)
-			error := decoder.Decode(&content)
-			if error != nil {
-				log.Println(error.Error())
-				http.Error(res, error.Error(), http.StatusBadRequest)
-			} else if content.Title == "" || content.Text == "" || content.ClientID == 0 {
-				http.Error(res, "bad request", http.StatusBadRequest)
+			me.URI = "/rs/content/add"
+			valid := auth.Authorize(me)
+			if valid != true {
+				res.WriteHeader(http.StatusUnauthorized)
 			} else {
-				content.CreateDate = time.Now()
-				fmt.Println(content)
-				resOut := contentDB.InsertContent(content)
-				fmt.Print("response: ")
-				fmt.Println(resOut)
-				resJSON, err := json.Marshal(resOut)
-				if err != nil {
+				content := new(contentManager.Content)
+				decoder := json.NewDecoder(req.Body)
+				error := decoder.Decode(&content)
+				content.ClientID = auth.ClientID
+				if error != nil {
 					log.Println(error.Error())
-					http.Error(res, "json output failed", http.StatusInternalServerError)
+					http.Error(res, error.Error(), http.StatusBadRequest)
+				} else if content.Title == "" || content.Text == "" || content.ClientID == 0 {
+					http.Error(res, "bad request", http.StatusBadRequest)
+				} else {
+					content.CreateDate = time.Now()
+					//fmt.Println(content)
+					resOut := contentDB.InsertContent(content)
+					fmt.Print("response: ")
+					fmt.Println(resOut)
+					resJSON, err := json.Marshal(resOut)
+					if err != nil {
+						log.Println(error.Error())
+						http.Error(res, "json output failed", http.StatusInternalServerError)
+					}
+					res.WriteHeader(http.StatusOK)
+					fmt.Fprint(res, string(resJSON))
 				}
-				res.WriteHeader(http.StatusOK)
-				fmt.Fprint(res, string(resJSON))
 			}
 		case "PUT":
-			content := new(contentManager.Content)
-			decoder := json.NewDecoder(req.Body)
-			error := decoder.Decode(&content)
-			if error != nil {
-				log.Println(error.Error())
-				http.Error(res, error.Error(), http.StatusBadRequest)
-			} else if content.Title == "" || content.Text == "" || content.ID == 0 || content.ClientID == 0 {
-				http.Error(res, "bad request in update", http.StatusBadRequest)
+			me.URI = "/rs/content/update"
+			valid := auth.Authorize(me)
+			if valid != true {
+				res.WriteHeader(http.StatusUnauthorized)
 			} else {
-				content.ModifiedDate = time.Now()
-				fmt.Println(content)
-				resOut := contentDB.UpdateContent(content)
-				fmt.Print("response: ")
-				fmt.Println(resOut)
-				resJSON, err := json.Marshal(resOut)
-				if err != nil {
+				content := new(contentManager.Content)
+				decoder := json.NewDecoder(req.Body)
+				error := decoder.Decode(&content)
+				content.ClientID = auth.ClientID
+				if error != nil {
 					log.Println(error.Error())
-					http.Error(res, "json output failed", http.StatusInternalServerError)
+					http.Error(res, error.Error(), http.StatusBadRequest)
+				} else if content.Title == "" || content.Text == "" || content.ID == 0 || content.ClientID == 0 {
+					http.Error(res, "bad request in update", http.StatusBadRequest)
+				} else {
+					content.ModifiedDate = time.Now()
+					fmt.Println(content)
+					resOut := contentDB.UpdateContent(content)
+					fmt.Print("response: ")
+					fmt.Println(resOut)
+					resJSON, err := json.Marshal(resOut)
+					if err != nil {
+						log.Println(error.Error())
+						http.Error(res, "json output failed", http.StatusInternalServerError)
+					}
+					res.WriteHeader(http.StatusOK)
+					fmt.Fprint(res, string(resJSON))
 				}
-				res.WriteHeader(http.StatusOK)
-				fmt.Fprint(res, string(resJSON))
 			}
 		}
 	}
@@ -137,14 +164,14 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 	if errID != nil {
 		http.Error(res, "bad request", http.StatusBadRequest)
 	}
-	clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
-	if errClient != nil {
-		http.Error(res, "bad request", http.StatusBadRequest)
-	}
 	fmt.Print("id is: ")
-	fmt.Print(id)
+	fmt.Println(id)
 	switch req.Method {
 	case "GET":
+		clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
+		if errClient != nil {
+			http.Error(res, "bad request", http.StatusBadRequest)
+		}
 		content := new(contentManager.Content)
 		content.ID = id
 		content.ClientID = clientID
@@ -159,19 +186,28 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusOK)
 		fmt.Fprint(res, string(resJSON))
 	case "DELETE":
-		content := new(contentManager.Content)
-		content.ID = id
-		content.ClientID = clientID
-		resOut := contentDB.DeleteContent(content)
-		fmt.Print("response: ")
-		fmt.Println(resOut)
-		resJSON, err := json.Marshal(resOut)
-		if err != nil {
-			log.Println(err.Error())
-			http.Error(res, "json output failed", http.StatusInternalServerError)
+		auth := getAuth(req)
+		me := new(uoauth.Claim)
+		me.Role = "admin"
+		me.URI = "/rs/content/delete"
+		valid := auth.Authorize(me)
+		if valid != true {
+			res.WriteHeader(http.StatusUnauthorized)
+		} else {
+			content := new(contentManager.Content)
+			content.ID = id
+			content.ClientID = auth.ClientID
+			resOut := contentDB.DeleteContent(content)
+			fmt.Print("response: ")
+			fmt.Println(resOut)
+			resJSON, err := json.Marshal(resOut)
+			if err != nil {
+				log.Println(err.Error())
+				http.Error(res, "json output failed", http.StatusInternalServerError)
+			}
+			res.WriteHeader(http.StatusOK)
+			fmt.Fprint(res, string(resJSON))
 		}
-		res.WriteHeader(http.StatusOK)
-		fmt.Fprint(res, string(resJSON))
 	}
 }
 
@@ -189,12 +225,55 @@ func handleContentList(res http.ResponseWriter, req *http.Request) {
 		resOut := contentDB.GetContentByClient(content)
 		fmt.Print("response: ")
 		fmt.Println(resOut)
+
 		resJSON, err := json.Marshal(resOut)
+		fmt.Print("response json: ")
+		fmt.Println(string(resJSON))
 		if err != nil {
 			log.Println(err.Error())
 			http.Error(res, "json output failed", http.StatusInternalServerError)
 		}
 		res.WriteHeader(http.StatusOK)
-		fmt.Fprint(res, string(resJSON))
+		if string(resJSON) == "null" {
+			fmt.Fprint(res, "[]")
+		} else {
+			fmt.Fprint(res, string(resJSON))
+		}
+
 	}
+}
+
+func getHeaders(req *http.Request) *authHeader {
+	var rtn = new(authHeader)
+	authHeader := req.Header.Get("Authorization")
+	tokenArray := strings.Split(authHeader, " ")
+	if len(tokenArray) == 2 {
+		rtn.token = tokenArray[1]
+		//fmt.Println(rtn.token)
+	}
+	userIDHeader := req.Header.Get("userId")
+	rtn.userID = userIDHeader
+
+	clientIDHeader := req.Header.Get("clientId")
+	clientID, err := strconv.ParseInt(clientIDHeader, 10, 32)
+	if err != nil {
+		fmt.Println(err)
+	}
+	rtn.clientID = clientID
+	//fmt.Println(clientIDHeader)
+	//fmt.Println(userIDHeader)
+	return rtn
+}
+
+func getAuth(req *http.Request) *uoauth.Oauth {
+	changeHeader := getHeaders(req)
+	auth := new(uoauth.Oauth)
+	auth.Token = changeHeader.token
+	auth.ClientID = changeHeader.clientID
+	if os.Getenv("OAUTH2_VALIDATION_URI") != "" {
+		auth.ValidationURL = os.Getenv("OAUTH2_VALIDATION_URI")
+	} else {
+		auth.ValidationURL = "http://localhost:3000/rs/token/validate"
+	}
+	return auth
 }

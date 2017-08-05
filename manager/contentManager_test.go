@@ -122,6 +122,20 @@ func TestGetContent(t *testing.T) {
 	}
 }
 
+func TestGetContentBadId(t *testing.T) {
+	var content Content
+	content.ID = 1
+	content.ClientID = 127
+	res := contentDB.GetContent(&content)
+	fmt.Println("")
+	fmt.Print("found content: ")
+	fmt.Println(res)
+	if res.ID != 0 {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
+}
+
 func TestGetContentByClient(t *testing.T) {
 	var content Content
 	content.ClientID = 127

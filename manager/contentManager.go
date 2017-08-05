@@ -131,6 +131,8 @@ func (db *ContentDB) GetContent(content *Content) *Content {
 	var rtn *Content
 	rowPtr := db.DbConfig.GetContent(a...)
 	if rowPtr != nil {
+		print("content row: ")
+		println(rowPtr.Row)
 		foundRow := rowPtr.Row
 		rtn = parseContentRow(&foundRow)
 	}
@@ -184,41 +186,43 @@ func (db *ContentDB) CloseDb() bool {
 
 func parseContentRow(foundRow *[]string) *Content {
 	var rtn Content
-	id, errID := strconv.ParseInt((*foundRow)[0], 10, 0)
-	if errID != nil {
-		fmt.Print(errID)
-	} else {
-		rtn.ID = id
-	}
-	rtn.Title = (*foundRow)[1]
-	cTime, errCtime := time.Parse(timeFormat, (*foundRow)[2])
-	if errCtime != nil {
-		fmt.Print(errCtime)
-	} else {
-		rtn.CreateDate = cTime
-	}
-	mTime, errMtime := time.Parse(timeFormat, (*foundRow)[3])
-	if errMtime != nil {
-		fmt.Print(errMtime)
-	} else {
-		rtn.ModifiedDate = mTime
-	}
-	hits, errHits := strconv.ParseInt((*foundRow)[4], 10, 0)
-	if errHits != nil {
-		fmt.Print(errHits)
-	} else {
-		rtn.Hits = hits
-	}
-	rtn.MetaAuthorName = (*foundRow)[5]
-	rtn.MetaDesc = (*foundRow)[6]
-	rtn.MetaKeyWords = (*foundRow)[7]
-	rtn.MetaRobotKeyWords = (*foundRow)[8]
-	rtn.Text = (*foundRow)[9]
-	clientID, errClient := strconv.ParseInt((*foundRow)[10], 10, 0)
-	if errClient != nil {
-		fmt.Print(errClient)
-	} else {
-		rtn.ClientID = clientID
+	if len(*foundRow) > 0 {
+		id, errID := strconv.ParseInt((*foundRow)[0], 10, 0)
+		if errID != nil {
+			fmt.Print(errID)
+		} else {
+			rtn.ID = id
+		}
+		rtn.Title = (*foundRow)[1]
+		cTime, errCtime := time.Parse(timeFormat, (*foundRow)[2])
+		if errCtime != nil {
+			fmt.Print(errCtime)
+		} else {
+			rtn.CreateDate = cTime
+		}
+		mTime, errMtime := time.Parse(timeFormat, (*foundRow)[3])
+		if errMtime != nil {
+			fmt.Print(errMtime)
+		} else {
+			rtn.ModifiedDate = mTime
+		}
+		hits, errHits := strconv.ParseInt((*foundRow)[4], 10, 0)
+		if errHits != nil {
+			fmt.Print(errHits)
+		} else {
+			rtn.Hits = hits
+		}
+		rtn.MetaAuthorName = (*foundRow)[5]
+		rtn.MetaDesc = (*foundRow)[6]
+		rtn.MetaKeyWords = (*foundRow)[7]
+		rtn.MetaRobotKeyWords = (*foundRow)[8]
+		rtn.Text = (*foundRow)[9]
+		clientID, errClient := strconv.ParseInt((*foundRow)[10], 10, 0)
+		if errClient != nil {
+			fmt.Print(errClient)
+		} else {
+			rtn.ClientID = clientID
+		}
 	}
 	return &rtn
 }
