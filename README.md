@@ -5,9 +5,9 @@ A content micro service for CMS and Shopping Cart use
 
 
 ## Headers
-### Content-Type: application/json (for POST and PUT)
-### Authorization: Bearer aToken (POST, PUT, and DELETE. No token required for get services.)
-### clientId: clientId (example 33477)
+- Content-Type: application/json (for POST and PUT)
+- Authorization: Bearer aToken (POST, PUT, and DELETE. No token required for get services.)
+- clientId: clientId (example 33477)
 
 
 
