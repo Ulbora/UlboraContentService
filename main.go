@@ -112,8 +112,8 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 					content.CreateDate = time.Now()
 					//fmt.Println(content)
 					resOut := contentDB.InsertContent(content)
-					fmt.Print("response: ")
-					fmt.Println(resOut)
+					//fmt.Print("response: ")
+					//fmt.Println(resOut)
 					resJSON, err := json.Marshal(resOut)
 					if err != nil {
 						log.Println(error.Error())
@@ -142,8 +142,8 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 					content.ModifiedDate = time.Now()
 					fmt.Println(content)
 					resOut := contentDB.UpdateContent(content)
-					fmt.Print("response: ")
-					fmt.Println(resOut)
+					//fmt.Print("response: ")
+					//fmt.Println(resOut)
 					resJSON, err := json.Marshal(resOut)
 					if err != nil {
 						log.Println(error.Error())
@@ -164,8 +164,8 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 	if errID != nil {
 		http.Error(res, "bad request", http.StatusBadRequest)
 	}
-	fmt.Print("id is: ")
-	fmt.Println(id)
+	//fmt.Print("id is: ")
+	//fmt.Println(id)
 	switch req.Method {
 	case "GET":
 		clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
@@ -176,8 +176,8 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 		content.ID = id
 		content.ClientID = clientID
 		resOut := contentDB.GetContent(content)
-		fmt.Print("response: ")
-		fmt.Println(resOut)
+		//fmt.Print("response: ")
+		//fmt.Println(resOut)
 		resJSON, err := json.Marshal(resOut)
 		if err != nil {
 			log.Println(err.Error())
@@ -198,8 +198,8 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 			content.ID = id
 			content.ClientID = auth.ClientID
 			resOut := contentDB.DeleteContent(content)
-			fmt.Print("response: ")
-			fmt.Println(resOut)
+			//fmt.Print("response: ")
+			//fmt.Println(resOut)
 			resJSON, err := json.Marshal(resOut)
 			if err != nil {
 				log.Println(err.Error())
@@ -223,12 +223,12 @@ func handleContentList(res http.ResponseWriter, req *http.Request) {
 		content := new(contentManager.Content)
 		content.ClientID = clientID
 		resOut := contentDB.GetContentByClient(content)
-		fmt.Print("response: ")
-		fmt.Println(resOut)
+		//fmt.Print("response: ")
+		//fmt.Println(resOut)
 
 		resJSON, err := json.Marshal(resOut)
-		fmt.Print("response json: ")
-		fmt.Println(string(resJSON))
+		//fmt.Print("response json: ")
+		//fmt.Println(string(resJSON))
 		if err != nil {
 			log.Println(err.Error())
 			http.Error(res, "json output failed", http.StatusInternalServerError)

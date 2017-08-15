@@ -46,6 +46,7 @@ func TestConnectDb(t *testing.T) {
 func TestInsertContent(t *testing.T) {
 	var content Content
 	content.Title = "test insert in manager"
+	content.Category = "Books"
 	content.CreateDate = time.Now()
 	content.Hits = 0
 	content.MetaAuthorName = "ken"
@@ -79,6 +80,7 @@ func TestInsertContent(t *testing.T) {
 func TestUpdateContent(t *testing.T) {
 	var content Content
 	content.Title = "test updated in manager"
+	content.Category = "Music"
 	content.ModifiedDate = time.Now()
 	content.Hits = 5
 	content.MetaAuthorName = "ken"
