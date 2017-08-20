@@ -77,6 +77,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/rs/content/add", handleContentChange).Methods("POST")
 	router.HandleFunc("/rs/content/update", handleContentChange).Methods("PUT")
+	router.HandleFunc("/rs/content/hits", handleContentHits).Methods("PUT")
 	router.HandleFunc("/rs/content/get/{id}/{clientId}", handleContent).Methods("GET")
 	router.HandleFunc("/rs/content/list/{clientId}", handleContentList).Methods("GET")
 	router.HandleFunc("/rs/content/delete/{id}", handleContent).Methods("DELETE")
@@ -142,6 +143,50 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 					content.ModifiedDate = time.Now()
 					fmt.Println(content)
 					resOut := contentDB.UpdateContent(content)
+					//fmt.Print("response: ")
+					//fmt.Println(resOut)
+					resJSON, err := json.Marshal(resOut)
+					if err != nil {
+						log.Println(error.Error())
+						http.Error(res, "json output failed", http.StatusInternalServerError)
+					}
+					res.WriteHeader(http.StatusOK)
+					fmt.Fprint(res, string(resJSON))
+				}
+			}
+		}
+	}
+}
+
+func handleContentHits(res http.ResponseWriter, req *http.Request) {
+	auth := getAuth(req)
+	me := new(uoauth.Claim)
+	me.Role = "admin"
+	res.Header().Set("Content-Type", "application/json")
+	cType := req.Header.Get("Content-Type")
+	if cType != "application/json" {
+		http.Error(res, "json required", http.StatusUnsupportedMediaType)
+	} else {
+		switch req.Method {
+		case "PUT":
+			me.URI = "/rs/content/hits"
+			valid := auth.Authorize(me)
+			if valid != true {
+				res.WriteHeader(http.StatusUnauthorized)
+			} else {
+				content := new(contentManager.Content)
+				decoder := json.NewDecoder(req.Body)
+				error := decoder.Decode(&content)
+				content.ClientID = auth.ClientID
+				if error != nil {
+					log.Println(error.Error())
+					http.Error(res, error.Error(), http.StatusBadRequest)
+				} else if content.ID == 0 || content.ClientID == 0 {
+					http.Error(res, "bad request in update", http.StatusBadRequest)
+				} else {
+					content.ModifiedDate = time.Now()
+					fmt.Println(content)
+					resOut := contentDB.UpdateContentHits(content)
 					//fmt.Print("response: ")
 					//fmt.Println(resOut)
 					resJSON, err := json.Marshal(resOut)

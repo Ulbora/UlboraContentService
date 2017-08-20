@@ -74,6 +74,33 @@ Example Response
 ```
 
 
+
+## Update Content Hits
+
+```
+PUT:
+URL: http://localhost:3008/rs/content/hits
+
+Example Request
+{
+   "id": 11,  
+   "hits": 101
+}
+  
+```
+
+```
+Example Response   
+
+{
+    "success": true,
+    "id": 11
+}
+
+```
+
+
+
 ## Get Content
 
 ```

@@ -112,13 +112,13 @@ func TestUpdateContentHits(t *testing.T) {
 
 func TestGetContent(t *testing.T) {
 	var content Content
-	content.ID = insertID
+	content.ID = insertID2
 	content.ClientID = 127
 	res := contentDB.GetContent(&content)
 	fmt.Println("")
 	fmt.Print("found content: ")
 	fmt.Println(res)
-	if res.Hits != 5 {
+	if res.Hits != 50 {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
