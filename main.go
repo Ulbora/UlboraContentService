@@ -42,6 +42,7 @@ type authHeader struct {
 	token    string
 	clientID int64
 	userID   string
+	hashed   bool
 }
 
 func main() {
@@ -88,6 +89,7 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 	auth := getAuth(req)
 	me := new(uoauth.Claim)
 	me.Role = "admin"
+	me.Scope = "write"
 	res.Header().Set("Content-Type", "application/json")
 	cType := req.Header.Get("Content-Type")
 	if cType != "application/json" {
@@ -162,6 +164,7 @@ func handleContentHits(res http.ResponseWriter, req *http.Request) {
 	auth := getAuth(req)
 	me := new(uoauth.Claim)
 	me.Role = "admin"
+	me.Scope = "write"
 	res.Header().Set("Content-Type", "application/json")
 	cType := req.Header.Get("Content-Type")
 	if cType != "application/json" {
@@ -234,6 +237,7 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 		auth := getAuth(req)
 		me := new(uoauth.Claim)
 		me.Role = "admin"
+		me.Scope = "write"
 		me.URI = "/rs/content/delete"
 		valid := auth.Authorize(me)
 		if valid != true {
@@ -305,6 +309,11 @@ func getHeaders(req *http.Request) *authHeader {
 		fmt.Println(err)
 	}
 	rtn.clientID = clientID
+	if req.Header.Get("hashed") == "true" {
+		rtn.hashed = true
+	} else {
+		rtn.hashed = false
+	}
 	//fmt.Println(clientIDHeader)
 	//fmt.Println(userIDHeader)
 	return rtn
@@ -315,6 +324,8 @@ func getAuth(req *http.Request) *uoauth.Oauth {
 	auth := new(uoauth.Oauth)
 	auth.Token = changeHeader.token
 	auth.ClientID = changeHeader.clientID
+	auth.UserID = changeHeader.userID
+	auth.Hashed = changeHeader.hashed
 	if os.Getenv("OAUTH2_VALIDATION_URI") != "" {
 		auth.ValidationURL = os.Getenv("OAUTH2_VALIDATION_URI")
 	} else {

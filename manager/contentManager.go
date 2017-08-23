@@ -96,7 +96,7 @@ func (db *ContentDB) UpdateContent(content *Content) *Response {
 		db.DbConfig.ConnectDb()
 	}
 	var a []interface{}
-	a = append(a, content.Title, content.Category, content.ModifiedDate, content.Hits, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ID, content.ClientID)
+	a = append(a, content.Title, content.Category, content.ModifiedDate, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ID, content.ClientID)
 	success := db.DbConfig.UpdateContent(a...)
 	if success == true {
 		fmt.Println("update record")
