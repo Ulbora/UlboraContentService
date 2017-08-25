@@ -51,6 +51,8 @@ type Content struct {
 	MetaKeyWords      string    `json:"metaKeyWords"`
 	MetaRobotKeyWords string    `json:"metaRobotKeyWords"`
 	Text              string    `json:"text"`
+	SortOrder         int       `json:"sortOrder"`
+	Archived          bool      `json:"archived"`
 	ClientID          int64     `json:"clientId"`
 }
 
@@ -77,7 +79,7 @@ func (db *ContentDB) InsertContent(content *Content) *Response {
 		db.DbConfig.ConnectDb()
 	}
 	var a []interface{}
-	a = append(a, content.Title, content.Category, content.CreateDate, content.Hits, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ClientID)
+	a = append(a, content.Title, content.Category, content.CreateDate, content.Hits, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.SortOrder, content.Archived, content.ClientID)
 	success, insID := db.DbConfig.InsertContent(a...)
 	if success == true {
 		fmt.Println("inserted record")
@@ -96,7 +98,7 @@ func (db *ContentDB) UpdateContent(content *Content) *Response {
 		db.DbConfig.ConnectDb()
 	}
 	var a []interface{}
-	a = append(a, content.Title, content.Category, content.ModifiedDate, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.ID, content.ClientID)
+	a = append(a, content.Title, content.Category, content.ModifiedDate, content.MetaAuthorName, content.MetaDesc, content.MetaKeyWords, content.MetaRobotKeyWords, content.Text, content.SortOrder, content.Archived, content.ID, content.ClientID)
 	success := db.DbConfig.UpdateContent(a...)
 	if success == true {
 		fmt.Println("update record")
@@ -219,7 +221,18 @@ func parseContentRow(foundRow *[]string) *Content {
 		rtn.MetaKeyWords = (*foundRow)[8]
 		rtn.MetaRobotKeyWords = (*foundRow)[9]
 		rtn.Text = (*foundRow)[10]
-		clientID, errClient := strconv.ParseInt((*foundRow)[11], 10, 0)
+		sortOrder, errSo := strconv.Atoi((*foundRow)[11])
+		if errSo != nil {
+			fmt.Print(sortOrder)
+		} else {
+			rtn.SortOrder = sortOrder
+		}
+		if (*foundRow)[12] == "1" {
+			rtn.Archived = true
+		} else {
+			rtn.Archived = false
+		}
+		clientID, errClient := strconv.ParseInt((*foundRow)[13], 10, 0)
 		if errClient != nil {
 			fmt.Print(errClient)
 		} else {

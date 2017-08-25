@@ -46,7 +46,7 @@ func TestConnectionTest(t *testing.T) {
 }
 func TestInsertContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert 2", "books", time.Now(), 0, "", "", "", "", "some content text", 125)
+	a = append(a, "test insert 2", "books", time.Now(), 0, "", "", "", "", "some content text", 1, false, 125)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success, insID := InsertContent(a...)
 	if success == true && insID != -1 {
@@ -71,7 +71,7 @@ func TestInsertContent(t *testing.T) {
 
 func TestUpdateContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert update", "tools", time.Now(), 1, "", "", "", "", "some content new text updated", insertID, 125)
+	a = append(a, "test insert update", "tools", time.Now(), "", "", "", "", "some content new text updated", 0, true, insertID, 125)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success := UpdateContent(a...)
 	if success != true {
@@ -136,14 +136,14 @@ func TestGetContentByClient(t *testing.T) {
 						fmt.Print(err2)
 					}
 					if r == 0 {
-						if insertID != int64Val {
+						if insertID2 != int64Val {
 							fmt.Print(insertID)
 							fmt.Print(" != ")
 							fmt.Println(int64Val)
 							t.Fail()
 						}
 					} else if r == 1 {
-						if insertID2 != int64Val {
+						if insertID != int64Val {
 							fmt.Print(insertID)
 							fmt.Print(" != ")
 							fmt.Println(int64Val)

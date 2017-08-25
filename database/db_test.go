@@ -38,7 +38,7 @@ func TestConnectionTest(t *testing.T) {
 
 func TestInsertContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert 2", "books", time.Now(), 0, "", "", "", "", "some content text", 126)
+	a = append(a, "test insert 2", "books", time.Now(), 0, "", "", "", "", "some content text", 1, false, 126)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success, insID := dbConfig.InsertContent(a...)
 	if success == true && insID != -1 {
@@ -63,7 +63,7 @@ func TestInsertContent(t *testing.T) {
 
 func TestUpdateContent(t *testing.T) {
 	var a []interface{}
-	a = append(a, "test insert update", "electronics", time.Now(), 1, "", "", "", "", "some content new text updated", insertID, 126)
+	a = append(a, "test insert update", "electronics", time.Now(), "", "", "", "", "some content new text updated", 0, true, insertID, 126)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success := dbConfig.UpdateContent(a...)
 	if success != true {
@@ -128,14 +128,14 @@ func TestGetContentByClient(t *testing.T) {
 						fmt.Print(err2)
 					}
 					if r == 0 {
-						if insertID != int64Val {
+						if insertID2 != int64Val {
 							fmt.Print(insertID)
 							fmt.Print(" != ")
 							fmt.Println(int64Val)
 							t.Fail()
 						}
 					} else if r == 1 {
-						if insertID2 != int64Val {
+						if insertID != int64Val {
 							fmt.Print(insertID)
 							fmt.Print(" != ")
 							fmt.Println(int64Val)
@@ -144,7 +144,7 @@ func TestGetContentByClient(t *testing.T) {
 					}
 				}
 				//fmt.Println(string(foundRow[c]))
-				if c == 1 && r == 0 {
+				if c == 1 && r == 2 {
 					if foundRow[c] != "test insert update" {
 						fmt.Print("Recourd not updated")
 						t.Fail()

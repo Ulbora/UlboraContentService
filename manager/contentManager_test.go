@@ -54,6 +54,8 @@ func TestInsertContent(t *testing.T) {
 	content.MetaKeyWords = "test, content, Ulbora"
 	content.MetaRobotKeyWords = "test, content, Ulbora"
 	content.Text = "some content text sent from wire"
+	content.SortOrder = 0
+	content.Archived = true
 	content.ClientID = 127
 
 	res := contentDB.InsertContent(&content)
@@ -82,12 +84,13 @@ func TestUpdateContent(t *testing.T) {
 	content.Title = "test updated in manager"
 	content.Category = "Music"
 	content.ModifiedDate = time.Now()
-	content.Hits = 5
 	content.MetaAuthorName = "ken"
 	content.MetaDesc = "test content"
 	content.MetaKeyWords = "test, content, Ulbora"
 	content.MetaRobotKeyWords = "test, content, Ulbora"
 	content.Text = "some content text sent from wire"
+	content.SortOrder = 1
+	content.Archived = false
 	content.ID = insertID
 	content.ClientID = 127
 	res := contentDB.UpdateContent(&content)
@@ -150,11 +153,11 @@ func TestGetContentByClient(t *testing.T) {
 		t.Fail()
 	} else {
 		row1 := (*res)[0]
-		if row1.Hits != 5 {
+		if row1.Hits != 50 {
 			t.Fail()
 		}
 		row2 := (*res)[1]
-		if row2.Hits != 50 {
+		if row2.Hits != 0 {
 			t.Fail()
 		}
 	}
