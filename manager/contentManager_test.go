@@ -163,6 +163,25 @@ func TestGetContentByClient(t *testing.T) {
 	}
 }
 
+func TestGetContentByClientCategory(t *testing.T) {
+	var content Content
+	content.ClientID = 127
+	content.Category = "Books"
+	res := contentDB.GetContentByClientCategory(&content)
+	fmt.Println("")
+	fmt.Print("found list content category: ")
+	fmt.Println(res)
+	if len(*res) == 0 {
+		fmt.Println("database read failed")
+		t.Fail()
+	} else {
+		row1 := (*res)[0]
+		if row1.Hits != 50 {
+			t.Fail()
+		}
+	}
+}
+
 func TestDeleteContent(t *testing.T) {
 	var content Content
 	content.ID = insertID

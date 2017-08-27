@@ -160,6 +160,40 @@ func TestGetContentByClient(t *testing.T) {
 	}
 }
 
+func TestGetContentByClientCategory(t *testing.T) {
+	a := []interface{}{125, "books"}
+	rowsPtr := GetContentByClientCategory(a...)
+	if rowsPtr != nil {
+		foundRows := rowsPtr.Rows
+		fmt.Print("Get by client category")
+		fmt.Println(foundRows)
+		//fmt.Println("GetList results: --------------------------")
+		for r := range foundRows {
+			foundRow := foundRows[r]
+			for c := range foundRow {
+				if c == 0 {
+					int64Val, err2 := strconv.ParseInt(foundRow[c], 10, 0)
+					if err2 != nil {
+						fmt.Print(err2)
+					}
+					if r == 0 {
+						if insertID2 != int64Val {
+							fmt.Print(insertID)
+							fmt.Print(" != ")
+							fmt.Println(int64Val)
+							t.Fail()
+						}
+					}
+				}
+				//fmt.Println(string(foundRow[c]))
+			}
+		}
+	} else {
+		fmt.Println("database read failed")
+		t.Fail()
+	}
+}
+
 func TestDeleteContent(t *testing.T) {
 	a := []interface{}{insertID, 125}
 	success := DeleteContent(a...)

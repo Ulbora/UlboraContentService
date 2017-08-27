@@ -159,6 +159,23 @@ func (db *ContentDB) GetContentByClient(content *Content) *[]Content {
 	return &rtn
 }
 
+//GetContentByClientCategory content by Client
+func (db *ContentDB) GetContentByClientCategory(content *Content) *[]Content {
+	var rtn []Content
+	var a []interface{}
+	a = append(a, content.ClientID, content.Category)
+	rowsPtr := db.DbConfig.GetContentByClientCategory(a...)
+	if rowsPtr != nil {
+		foundRows := rowsPtr.Rows
+		for r := range foundRows {
+			foundRow := foundRows[r]
+			rowContent := parseContentRow(&foundRow)
+			rtn = append(rtn, *rowContent)
+		}
+	}
+	return &rtn
+}
+
 //DeleteContent in database
 func (db *ContentDB) DeleteContent(content *Content) *Response {
 	var rtn Response

@@ -81,6 +81,7 @@ func main() {
 	router.HandleFunc("/rs/content/hits", handleContentHits).Methods("PUT")
 	router.HandleFunc("/rs/content/get/{id}/{clientId}", handleContent).Methods("GET")
 	router.HandleFunc("/rs/content/list/{clientId}", handleContentList).Methods("GET")
+	router.HandleFunc("/rs/content/list/{clientId}/{category}", handleContentListCategory).Methods("GET")
 	router.HandleFunc("/rs/content/delete/{id}", handleContent).Methods("DELETE")
 	http.ListenAndServe(":3008", router)
 }
@@ -272,6 +273,40 @@ func handleContentList(res http.ResponseWriter, req *http.Request) {
 		content := new(contentManager.Content)
 		content.ClientID = clientID
 		resOut := contentDB.GetContentByClient(content)
+		//fmt.Print("response: ")
+		//fmt.Println(resOut)
+
+		resJSON, err := json.Marshal(resOut)
+		//fmt.Print("response json: ")
+		//fmt.Println(string(resJSON))
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(res, "json output failed", http.StatusInternalServerError)
+		}
+		res.WriteHeader(http.StatusOK)
+		if string(resJSON) == "null" {
+			fmt.Fprint(res, "[]")
+		} else {
+			fmt.Fprint(res, string(resJSON))
+		}
+
+	}
+}
+
+func handleContentListCategory(res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(req)
+	clientID, errClient := strconv.ParseInt(vars["clientId"], 10, 0)
+	if errClient != nil {
+		http.Error(res, "bad request", http.StatusBadRequest)
+	}
+	category := vars["category"]
+	switch req.Method {
+	case "GET":
+		content := new(contentManager.Content)
+		content.ClientID = clientID
+		content.Category = category
+		resOut := contentDB.GetContentByClientCategory(content)
 		//fmt.Print("response: ")
 		//fmt.Println(resOut)
 

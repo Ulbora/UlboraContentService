@@ -123,6 +123,17 @@ func (db *DbConfig) GetContentByClient(args ...interface{}) *ContentRows {
 	return &contentRows
 }
 
+//GetContentByClientCategory get a row. Passing in tx allows for transactions
+func (db *DbConfig) GetContentByClientCategory(args ...interface{}) *ContentRows {
+	var contentRows ContentRows
+	rowsPtr := contentDb.GetContentByClientCategory(args...)
+	if rowsPtr != nil {
+		contentRows.Columns = rowsPtr.Columns
+		contentRows.Rows = rowsPtr.Rows
+	}
+	return &contentRows
+}
+
 //DeleteContent delete
 func (db *DbConfig) DeleteContent(args ...interface{}) bool {
 	success := contentDb.DeleteContent(args...)

@@ -66,6 +66,12 @@ func GetContentByClient(args ...interface{}) *crud.DbRows {
 	return rowsPtr
 }
 
+//GetContentByClientCategory get a row. Passing in tx allows for transactions
+func GetContentByClientCategory(args ...interface{}) *crud.DbRows {
+	rowsPtr := crud.GetList(ContentGetByClientCategoryQuery, args...)
+	return rowsPtr
+}
+
 //DeleteContent delete
 func DeleteContent(args ...interface{}) bool {
 	success := crud.Delete(nil, DeleteContentQuery, args...)
