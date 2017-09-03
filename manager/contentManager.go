@@ -171,6 +171,16 @@ func (db *ContentDB) GetContentByClientCategory(content *Content) *[]Content {
 			foundRow := foundRows[r]
 			rowContent := parseContentRow(&foundRow)
 			rtn = append(rtn, *rowContent)
+			//update hits
+			var nowTime = time.Now()
+			h := rowContent.Hits
+			h++
+			var a []interface{}
+			a = append(a, nowTime, h, rowContent.ID, rowContent.ClientID)
+			success := db.DbConfig.UpdateContentHits(a...)
+			if success != true {
+				fmt.Println("error update hits on record")
+			}
 		}
 	}
 	return &rtn
