@@ -98,7 +98,7 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 	} else {
 		switch req.Method {
 		case "POST":
-			me.URI = "/rs/content/add"
+			me.URI = "/ulbora/rs/content/add"
 			valid := auth.Authorize(me)
 			if valid != true {
 				res.WriteHeader(http.StatusUnauthorized)
@@ -128,7 +128,7 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 				}
 			}
 		case "PUT":
-			me.URI = "/rs/content/update"
+			me.URI = "/ulbora/rs/content/update"
 			valid := auth.Authorize(me)
 			if valid != true {
 				res.WriteHeader(http.StatusUnauthorized)
@@ -173,7 +173,7 @@ func handleContentHits(res http.ResponseWriter, req *http.Request) {
 	} else {
 		switch req.Method {
 		case "PUT":
-			me.URI = "/rs/content/hits"
+			me.URI = "/ulbora/rs/content/hits"
 			valid := auth.Authorize(me)
 			if valid != true {
 				res.WriteHeader(http.StatusUnauthorized)
@@ -239,7 +239,7 @@ func handleContent(res http.ResponseWriter, req *http.Request) {
 		me := new(uoauth.Claim)
 		me.Role = "admin"
 		me.Scope = "write"
-		me.URI = "/rs/content/delete"
+		me.URI = "/ulbora/rs/content/delete"
 		valid := auth.Authorize(me)
 		if valid != true {
 			res.WriteHeader(http.StatusUnauthorized)
