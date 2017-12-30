@@ -74,7 +74,7 @@ func main() {
 	contentDB.ConnectDb()
 	defer contentDB.CloseDb()
 
-	fmt.Println("Server running!")
+	fmt.Println("Server running on port 3008!")
 	router := mux.NewRouter()
 	router.HandleFunc("/rs/content/add", handleContentChange).Methods("POST")
 	router.HandleFunc("/rs/content/update", handleContentChange).Methods("PUT")
