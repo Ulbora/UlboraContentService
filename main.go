@@ -144,7 +144,7 @@ func handleContentChange(res http.ResponseWriter, req *http.Request) {
 					http.Error(res, "bad request in update", http.StatusBadRequest)
 				} else {
 					content.ModifiedDate = time.Now()
-					fmt.Println(content)
+					//fmt.Println(content)
 					resOut := contentDB.UpdateContent(content)
 					//fmt.Print("response: ")
 					//fmt.Println(resOut)
@@ -189,7 +189,7 @@ func handleContentHits(res http.ResponseWriter, req *http.Request) {
 					http.Error(res, "bad request in update", http.StatusBadRequest)
 				} else {
 					content.ModifiedDate = time.Now()
-					fmt.Println(content)
+					//fmt.Println(content)
 					resOut := contentDB.UpdateContentHits(content)
 					//fmt.Print("response: ")
 					//fmt.Println(resOut)
