@@ -192,3 +192,10 @@ Example Response
 }
 
 ```
+# Docker usage
+```
+docker run --network=ulbora_bridge --name content --log-opt max-size=50m --env DATABASE_HOST=someHost /
+ --env DATABASE_USER_NAME=someUser --env DATABASE_USER_PASSWORD=somePw --env DATABASE_NAME=ulbora_content_service /
+ --env DATABASE_POOL_SIZE=5 --env OAUTH2_VALIDATION_URI=http://oauth2:8080/rs/token/validate /
+ --env --restart=always -d ulboralabs/content sh
+```
