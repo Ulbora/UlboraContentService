@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2016 Ulbora Labs Inc. (www.ulboralabs.com)
+ Copyright (C) 2016 Ulbora Labs LLC. (www.ulboralabs.com)
  All rights reserved.
 
  Copyright (C) 2016 Ken Williamson
