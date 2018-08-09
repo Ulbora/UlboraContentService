@@ -1,9 +1,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Ulbora/UlboraContentService)](https://goreportcard.com/report/github.com/Ulbora/UlboraContentService)
 
-Ulbora Content Service
+Ulbora CMS Headless
 ==============
 
-A content micro service for CMS and Shopping Cart use
+Ulbora CMS Headless is a CMS that can provide content for use anywhere. 
 
 
 ## Headers
